@@ -52,26 +52,6 @@ use yii\bootstrap\Alert;
         </div>
         <!--logo and iconic logo end-->
 
-        <div class="left-side-inner">
-
-            <!-- visible to small devices only -->
-            <div class="visible-xs hidden-sm hidden-md hidden-lg">
-                <div class="media logged-user">
-                    <img alt="" src="/images/photos/user-avatar.png" class="media-object">
-                    <div class="media-body">
-                        <h4><a href="#">John Doe</a></h4>
-                        <span>"Hello There..."</span>
-                    </div>
-                </div>
-
-                <h5 class="left-nav-title">Account Information</h5>
-                <ul class="nav nav-pills nav-stacked custom-nav">
-                  <li><a href="#"><i class="fa fa-user"></i> <span>Profile</span></a></li>
-                  <li><a href="#"><i class="fa fa-cog"></i> <span>Settings</span></a></li>
-                  <li><a href="#"><i class="fa fa-sign-out"></i> <span>Sign Out</span></a></li>
-                </ul>
-            </div>
-
             <!--sidebar nav start-->
             <?php
                 define('CONTROLLER', Yii::$app->controller->id);
@@ -82,7 +62,7 @@ use yii\bootstrap\Alert;
                  */
                 function siderbar_controller($url, $icon, $name) {
                     $siderbar = [
-                        'auth/index' => ['auth/index', 'auth/role'],
+                        'auth/index' => ['auth/index', 'auth/role', 'auth/update_password'],
                     ];
                     if (in_array(CONTROLLER . '/' . ACTION, $siderbar[$url])) {
                         echo '<li class="menu-list nav-active">';
@@ -109,6 +89,7 @@ use yii\bootstrap\Alert;
                     <ul class="sub-menu-list">
                         <?php siderbar_action('auth', 'index', '管理员列表'); ?>
                         <?php siderbar_action('auth', 'role', '管理员组列表'); ?>
+                        <?php siderbar_action('auth', 'update_password', '修改密码'); ?>
                     </ul>
                 </li>
             </ul>
@@ -313,7 +294,7 @@ use yii\bootstrap\Alert;
                         </a>
                         <ul class="dropdown-menu dropdown-menu-usermenu pull-right">
                             <li><a href="#"><i class="fa fa-user"></i>  Profile</a></li>
-                            <li><a href="#"><i class="fa fa-cog"></i>  Settings</a></li>
+                            <li><a href="/auth/update_password"><i class="fa fa-cog"></i>  修改密码</a></li>
                             <li><a href="/login/logout"><i class="fa fa-sign-out"></i> 注销</a></li>
                         </ul>
                     </li>

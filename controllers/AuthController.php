@@ -271,4 +271,38 @@ class AuthController extends BaseController
 			}
 		}
 	}
+
+
+	/**
+	 * 修改密码
+	 */
+	public function actionUpdate_password()
+	{
+        if ($post_data = Yii::$app->request->post()) {
+            if ($post_data['AdminUsers']['password'] !=
+                $post_data['AdminUsers']['password_confirm']
+            ) {
+                Yii::$app->session->setFlash('error', '确认密码不一致');
+                return $this->redirect(['/auth/update_password']);
+            }
+
+            unset($post_data['AdminUsers']['password_confirm']);
+
+            $uid = Yii::$app->User->id;
+
+            $user = User::findOne($uid);
+            $salt_hash = Salt::generateSalt($post_data['AdminUsers']['password']);
+            $user->password = $salt_hash['hash'];
+            $user->salt = $salt_hash['salt'];
+
+            if ($user->save()) {
+                Yii::$app->session->setFlash('success', '密码修改成功');
+                return $this->redirect(['/auth/update_password']);
+            }
+            Yii::$app->session->setFlash('error', '密码修改失败');
+            return $this->redirect(['/auth/update_password']);
+        }
+        return $this->render('update_passwd.php');		
+	}
+
 } 
