@@ -18,10 +18,5 @@ class BaseController extends Controller
         }
         return parent::beforeAction($action);
     }
-
-    // public function _pageList($data = [], $currentPage = 1 , $pageSize = 10)
-    // {
-    // 	$pages = new Pagination(['totalCount' => $count, ])
-    // }
 }
 

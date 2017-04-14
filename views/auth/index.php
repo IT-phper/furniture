@@ -2,10 +2,13 @@
 
 use app\models\Role;
 use app\models\User;
+use yii\widgets\LinkPager;
 
 $this->title = '管理员列表';
 $this->params['breadcrumbs'][] = $this->title;
+
 ?>
+
 <style type="text/css">
 .form-control.col-md-3 {
     width: 25%;
@@ -18,7 +21,7 @@ $this->params['breadcrumbs'][] = $this->title;
 }
 .pageSize-box {
     display: inline-block;
-    width: 65px;
+    width: 75px;
     margin-left: 10px;
     vertical-align: middle;
 }
@@ -53,7 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>
             <form class="form-horizontal" method="post">
                 <div class="modal-body">
-                    <input type="hidden" name="_csrf" value="<?= \Yii::$app->getRequest()->getCsrfToken();?>">
+                    <input type="hidden" name="_csrf" value="<?= Yii::$app->getRequest()->getCsrfToken();?>">
                     <div class="form-group">
                         <label class="control-label col-md-4" for="administrators-number">账号</label>
                         <div class="col-md-6">
@@ -84,11 +87,11 @@ $this->params['breadcrumbs'][] = $this->title;
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label col-md-4" for="administrators-group">用户组</label>
+                        <label class="control-label col-md-4" for="administrators-group">管理员分组</label>
                         <div class="col-md-6">
                             <select id="administrators-group" class="form-control" name='AdminUsers[role]'>
                                 <?php 
-                                    $data  = Role::getRoleList(); 
+                                    $data  = Role::getRoleList();
                                     foreach ($data as $id => $name) { 
                                         echo '<option value="' . $id . '">' . $name . '</option>';
                                     }
@@ -111,27 +114,39 @@ $this->params['breadcrumbs'][] = $this->title;
             <tr>
                 <th class="">账号</th>
                 <th style="width:90px;">真实姓名</th>
-                <th class="width:160px">用户组</th>
+                <th class="width:160px">管理员组</th>
                 <th style="width:80px;">状态</th>
                 <th style="width:160px;">添加时间</th>
                 <th style="width:206px;">操作</th>
             </tr>
             <tr class="send">
-                <td><input type="text" class="form-control" name="username"  value="" ></td>
-                <td><input type="text" class="form-control" name="real_name" value="" ></td>
+                <td><input type="text" class="form-control" name="username"  value="<?= Yii::$app->request->queryParams['username'] ?>" ></td>
+                <td><input type="text" class="form-control" name="real_name" value="<?= Yii::$app->request->queryParams['real_name'] ?>"></td>
                 <td>
                     <select class="form-control" name="role">
                         <option value="">全部</option>
-                      
-                        <option value=""  selected></option>
-                    
+                        <?php 
+                            $data  = Role::getRoleList();
+                            foreach ($data as $id => $name) { 
+                                $default = Yii::$app->request->queryParams['role'] == $id ? 'selected' : '';
+                                echo "<option value= {$id} {$default}>{$name}</option>";
+                            }
+                        ?>   
                     </select>
                 </td>
                  <td>
                     <select class="form-control" name="status" style="padding:6px 2px">
-                        <option value="">全部</option>
-                        <option value="1" selected>启用</option>
-                        <option value="0" >暂停</option>
+                        <?php
+                            $status = [
+                                ' ' => '全部',
+                                '1' => '启用',
+                                '2' => '暂停'
+                            ];
+                            foreach ($status as $k => $v) {
+                                $default = Yii::$app->request->queryParams['status'] == $k ? 'selected' : '';
+                                echo "<option value= {$k} {$default}>{$v}</option>";
+                            }
+                        ?>
                     </select>
                 </td>
                 <td><input id="pickTime" class="form-control" type="text" name="time" value="" readonly></td>
@@ -164,16 +179,21 @@ $this->params['breadcrumbs'][] = $this->title;
                 <div class="pageSize-box">
                     <select id="pageSize" class="form-control" name="per-page">
                         <?php 
-                            $page = \Yii::$app->params['per-page'];
+                            $page = Yii::$app->params['per-page'];
                             foreach ($page as $per_page) {
-                                echo '<option value="' . $per_page . '">' . $per_page . '</option>';
+                                $default = Yii::$app->request->queryParams['per-page'] == $per_page ? 'selected' : '';
+                                echo "<option value= {$per_page} {$default}>{$per_page}</option>";
                             }
                         ?>
                     </select>
                 </div>
             </div>
             <nav class="pull-right">
-               
+               <?php
+                    echo LinkPager::widget([
+                        'pagination' => $pagination,
+                    ]);
+               ?>
             </nav>
         </div>
     </form>
@@ -241,13 +261,13 @@ $this->params['breadcrumbs'][] = $this->title;
           <form action="/auth/admin_change_role" class="form-horizontal" method="post">
             <div class="modal-header">
                 <button class="close" type="button" data-dismiss="modal" aria-label="Close">&times;</button>
-                <h4 class="modal-title">更新用户组</h4>
+                <h4 class="modal-title">更新管理员组</h4>
             </div>
             <div class="modal-body clearfix">
                 <input type="hidden" name="id">
-                <input type="hidden" name="_csrf" value="<?= \Yii::$app->getRequest()->getCsrfToken()?>">
+                <input type="hidden" name="_csrf" value="<?= Yii::$app->getRequest()->getCsrfToken()?>">
                 <div class="form-group">
-                        <label class="control-label col-md-4" for="administrators-group">用户组</label>
+                        <label class="control-label col-md-4" for="administrators-group">管理员组</label>
                         <div class="col-md-6">
                             <select id="administrators-group" class="form-control" name='role'>
                                 <?php 
@@ -278,9 +298,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 var reg = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~!@#$%^&*()_+`\-={}:";'<>?,.\/]).{16,}$/;
 
                 if(!reg.test(pwd)) {
-                    $pwd
-                          .next().hide()
-                    .end().nextAll('.text-danger').show();
+                    $pwd.next().hide().end().nextAll('.text-danger').show();
                 }
 
                 if(pwd !== confirmPwd && confirmPwd) {

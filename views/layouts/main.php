@@ -108,7 +108,7 @@ use yii\bootstrap\Alert;
                 <?php siderbar_controller('auth/index', 'fa-book', '管理员与授权'); ?>
                     <ul class="sub-menu-list">
                         <?php siderbar_action('auth', 'index', '管理员列表'); ?>
-                        <?php siderbar_action('auth', 'role', '角色分组列表'); ?>
+                        <?php siderbar_action('auth', 'role', '管理员组列表'); ?>
                     </ul>
                 </li>
             </ul>

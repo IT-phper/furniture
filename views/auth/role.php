@@ -1,7 +1,12 @@
 <?php 
-$this->title = '管理员组分组列表';
+
+use yii\widgets\LinkPager;
+
+$this->title = '管理员组列表';
 $this->params['breadcrumbs'][] = $this->title;
+
 ?>
+
 <style type="text/css">
 .form-control.col-md-3 {
     width: 25%;
@@ -14,7 +19,7 @@ $this->params['breadcrumbs'][] = $this->title;
 }
 .pageSize-box {
     display: inline-block;
-    width: 50px;
+    width: 65px;
     margin-left: 10px;
     vertical-align: middle;
 }
@@ -51,7 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     <div class="form-group">
                         <label class="control-label col-md-3" for="Role[name]">管理员组名称</label>
                         <div class="col-md-9">
-                            <input type="text" id="ugroup-name" class="form-control" placeholder="组" name="Role[name]" required>
+                            <input type="text" id="ugroup-name" class="form-control" name="Role[name]" required>
                             <span id="helpBlock" class="help-block">请填写管理员组名称</span>
                         </div>
                     </div>
@@ -64,7 +69,7 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
     </div>
 </div>
- <form id="localSearch" action="/admin/auth/role" method="get">
+ <form id="localSearch" action="/auth/role" method="get">
     <table id="j-server-table" class="table table-bordered table-hover">
         <tr>
             <th style="width:152px;">管理员组名称</th>
@@ -74,8 +79,8 @@ $this->params['breadcrumbs'][] = $this->title;
         </tr>
 
         <tr class="send">
-            <td><input type="text" class="form-control" name="role"></td>
-            <td><input type="text" class="form-control" name="username"></td>
+            <td><input type="text" class="form-control" name="name" value="<?= Yii::$app->request->queryParams['name']?>"></td>
+            <td><input type="text" class="form-control" name="username" value="<?= Yii::$app->request->queryParams['username']?>"></td>
             <td><input id="pickTime" class="form-control" type="text" name="time" value="" readonly></td>
             <td></td>
         </tr>
@@ -83,9 +88,13 @@ $this->params['breadcrumbs'][] = $this->title;
         <tr data-id=<?= $role['role']?>>
             <td data-canEdit="true" data-type="input"><span><?= $role['name']?></span></td>
             <td data-canEdit="true" data-type="input">
-                
-                <span> </span>
-               
+                <?php
+                    foreach ($role->user as $v) {
+                        if ($v->status == 1) {
+                            echo "<span>{$v->real_name}</span> ";
+                        }
+                    }
+                ?>
             </td>
             <td data-canEdit="true" data-type="input"><span><?= $role['created']?></span></td>
             <td>
@@ -102,11 +111,22 @@ $this->params['breadcrumbs'][] = $this->title;
             <label class="control-label">每页显示</label>
             <div class="pageSize-box">
                 <select id="pageSize" class="form-control" name="per-page">
-                 
+                    <?php 
+                        $page = Yii::$app->params['per-page'];
+                        foreach ($page as $per_page) {
+                            $default = Yii::$app->request->queryParams['per-page'] == $per_page ? 'selected' : '';
+                            echo "<option value= {$per_page} {$default}>{$per_page}</option>";
+                        }
+                    ?>
                 </select>
             </div>
         </div>
         <nav class="pull-right">
+            <?php
+                echo LinkPager::widget([
+                    'pagination' => $pagination,
+                ]);
+           ?>
         </nav>
     </div>
 </form>
@@ -180,5 +200,18 @@ $this->params['breadcrumbs'][] = $this->title;
 	        var id = $trigger.parents('tr').data('id');
 	        $(this).find('input[name="id"]').val(id);
 	    });
+
+        //搜索
+        // 回车键搜索
+        $(document).on('keydown', function(event) {
+            var code = event.keyCode;
+            if(code === 13) {
+                $('#localSearch').submit();
+            }
+        });        
+        //改变分页时搜索
+        $('#pageSize').on('change', function() {
+            $('#localSearch').submit();
+        });
 	});
 </script>

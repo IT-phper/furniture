@@ -7,6 +7,7 @@ use app\models\Role;
 use app\models\User;
 use app\components\Salt;
 use app\models\OperateLog;
+use yii\data\Pagination;
 
 class AuthController extends BaseController
 {
@@ -49,12 +50,24 @@ class AuthController extends BaseController
 			return $this->redirect(['/auth/index']);
 		}
 
-		//自定义查询
-		$query_params = Yii::$app->request->query_params;
-		$currentPage = $query_params['page'] ? $query_params['page'] : 1;
-		$pageSize = $query_params['per-page'] ? $query_params['per-page'] : 10;
-		$users = $user::find()->where(['<>', 'status', 3])->all();
-		return $this->render('index', ['users' => $users]);
+		//查询
+		$queryParams = Yii::$app->request->queryParams;
+		$pageSize = $queryParams['per-page'] ? $queryParams['per-page'] : 5;
+		$model = $user::find()
+			->searchUsername($queryParams['username'])
+			->searchRealname($queryParams['real_name'])
+			->searchRole($queryParams['role'])
+			->searchStatus($queryParams['status']);
+
+		//分页
+ 		$pagination = new Pagination(['totalCount' => $model->count(), 'pageSize' => $pageSize]);
+		$users = $model->offset($pagination->offset)
+    		->limit($pagination->limit)
+    		->all();
+		return $this->render('index', [
+			'users' => $users,
+			'pagination' => $pagination,
+		]);
 	}
 
 	/**
@@ -152,22 +165,47 @@ class AuthController extends BaseController
 
 
 	/**
-	 * 管理员组列表
+	 * 管理员组
 	 */
 	public function actionRole()
 	{
 		$role = new role();
+
+		//新建管理员组
 		if ($post_data = Yii::$app->request->post()) {
 			if ($role->load($post_data)) {
 				$role->created = $role->updated = date('Y-m-d H:i:s');
 				if ($role->save()) {
+					OperateLog::insertLog('101',
+						$role->role,
+						Yii::$app->user->id,
+						Yii::$app->request->getUserIP(),
+						OperateLog::OPERATE_TYPE_APPEND,
+						'新建管理员组 ' . $role->name,
+						'新建管理员组'
+					);
 					Yii::$app->session->setFlash('success', '管理员组新建成功');
 					return $this->redirect(['/auth/role']);
 				}
 			}
 		}
-		$data = $role::find()->asArray()->all();
-		return $this->render('role', ['data' => $data]);
+
+		//查询
+		$queryParams = Yii::$app->request->queryParams;
+		$pageSize = $queryParams['per-page'] ? $queryParams['per-page'] : 5;
+		$model = $role::find()
+			->searchName($queryParams['name'])
+			->searchUsername($queryParams['username']);
+		//分页
+ 		$pagination = new Pagination(['totalCount' => $model->count(), 'pageSize' => $pageSize]);
+		$data = $model->offset($pagination->offset)
+    		->limit($pagination->limit)
+    		->all();
+
+		return $this->render('role', [
+			'data' => $data,
+			'pagination' => $pagination
+		]);
 	}
 
 	/**
@@ -180,6 +218,14 @@ class AuthController extends BaseController
 			$role->name = $data['name'];
 			$role->updated = date('Y-m-d H:i:s');
 			if ($role->save()) {
+				OperateLog::insertLog('101',
+						$role->role,
+						Yii::$app->user->id,
+						Yii::$app->request->getUserIP(),
+						OperateLog::OPERATE_TYPE_ALTER,
+						'编辑管理员组 ' . $role->name,
+						'编辑管理员组'
+					);
 				Yii::$app->session->setFlash('success', '修改成功');
 				return $this->redirect(['/auth/role']);
 			}
@@ -193,6 +239,36 @@ class AuthController extends BaseController
 	 */
 	public function actionDelete_role()
 	{
+		if ($post_data = Yii::$app->request->post()) {
 
+			if (!$post_data['reason']) {
+				Yii::$app->session->setFlash('error', '备注信息不能为空');
+				return $this->redirect(['/auth/role']);
+			}
+
+			$id = $post_data['id'];
+			$res = User::find()->where([
+            'role' => $id,
+            ])->count();
+
+			if ($res) {
+				Yii::$app->session->setFlash('error', '需先清空改组成员');
+				return $this->redirect(['/auth/role']);
+			}
+
+			$role = Role::findOne($id);
+			if ($role->delete()) {
+				OperateLog::insertLog('101',
+					$role->role,
+					Yii::$app->user->id,
+					Yii::$app->request->getUserIP(),
+					OperateLog::OPERATE_TYPE_DELETE,
+					'删除管理员组' . $role->name,
+					$post_data['reason']
+				);
+				Yii::$app->session->setFlash('success', '删除成功');
+				return $this->redirect(['/auth/role']);
+			}
+		}
 	}
 } 

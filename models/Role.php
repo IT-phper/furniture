@@ -53,4 +53,54 @@ class Role extends \yii\db\ActiveRecord
     {
         return self::find()->select('name')->orderBy('role')->indexBy('role')->column();
     }
+
+    /**
+     * 关联User表
+     */
+    public function getUser()
+    {
+        return $this->hasMany(User::className(), ['role' => 'role']);
+    }
+
+    public static function find()
+    {
+        return (new RoleQuery(get_called_class()));
+    } 
+
+}
+
+
+class RoleQuery extends \yii\db\ActiveQuery
+{
+
+    /**
+     * @inheritdoc
+     * @return Role[]|array
+     */
+    public function all($db = null)
+    {
+        return parent::all($db);
+    }
+
+    /**
+     * @inheritdoc
+     * @return Role|array|null
+     */
+    public function one($db = null)
+    {
+        return parent::one($db);
+    }
+
+    public function searchName($name = null)
+    {
+        return $this->andFilterWhere(['like', 'name', trim($name)]);
+    }
+
+    public function searchUsername($username = null)
+    {
+        if (!$username) return $this;
+        $role = User::getRoleByRealName(trim($username));
+        if (!role) return $this;
+        return $this->andWhere(['in', 'role', $role]);
+    }
 }

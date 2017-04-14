@@ -31,4 +31,26 @@ class UserQuery extends \yii\db\ActiveQuery
     {
         return parent::one($db);
     }
+
+    public function searchUsername($username = null)
+    {
+        return $this->andFilterWhere(['like', 'username', trim($username)]);
+    }
+
+    public function searchRealname($real_name = null)
+    {
+        return $this->andFilterWhere(['like', 'real_name', trim($real_name)]);
+    }
+
+    public function searchRole($role = null)
+    {
+        if (!$role) return $this;
+        return $this->andWhere(['role' => trim($role)]);
+    }
+
+    public function searchStatus($status = null)
+    {
+        if (!$status && $status !== '0') return $this;
+        return $this->andWhere(['user.status' => trim($status)]);
+    }
 }

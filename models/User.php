@@ -84,7 +84,7 @@ class User extends \yii\db\ActiveRecord
      */
     public static function find()
     {
-        return new UserQuery(get_called_class());
+        return (new UserQuery(get_called_class()))->andWhere(['<>', self::tableName() . '.status', 3]);
     }
 
     /**
@@ -104,5 +104,14 @@ class User extends \yii\db\ActiveRecord
         if (!$data) return false;
         if ($data['password'] === Salt::verifySalt($password, $data['salt'])) return true;
         return false;
+    }
+
+    /**
+     * 通过real_name获取role
+     *  管理员组列表中搜索名字
+     */
+    public static function getRoleByRealName($real_name) 
+    {
+        return self::find()->select('role')->where(['real_name' => $real_name])->asArray()->all();
     }
 }
