@@ -272,6 +272,13 @@ class AuthController extends BaseController
 		}
 	}
 
+	/**
+	 * 操作日志
+	 */
+	public function actionDolog()
+	{
+		
+	}
 
 	/**
 	 * 修改密码

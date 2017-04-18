@@ -15,11 +15,12 @@ class LoginController extends Controller
 	public function actionIndex()
 	{
 		if (!Yii::$app->user->isGuest) {
-			return $this->redirect(['/']);
+			return $this->redirect('/');
 		}
 		if ($post_data = Yii::$app->request->post()) {
 			if (User::validatePassword($post_data['username'], $post_data['password'])) {
 				Yii::$app->user->login(UserIdentity::findByUsername($post_data['username']), $post_data['rememberMe'] == 'rememberMe' ? 3600*24*30 : 0);
+				return $this->redirect('/');
 			} else {
 				Yii::$app->session->setFlash('error', '您输入的账号或密码有误');
 			}

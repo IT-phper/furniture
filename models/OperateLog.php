@@ -33,6 +33,7 @@ class OperateLog extends \yii\db\ActiveRecord
      */
     public $arModule = [
         101 => '管理员与授权',
+        102 => '总店商品信息',
     ];
 
     /**

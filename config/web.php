@@ -47,6 +47,7 @@ $config = [
         ],
         
     ],
+    'timeZone' => 'PRC',
     'params' => $params,
 ];
 

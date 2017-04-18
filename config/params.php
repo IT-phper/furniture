@@ -1,7 +1,6 @@
 <?php
 
 return [
-	'timeZone' => 'PRC',
     'adminEmail' => 'admin@example.com',
      //页面显示个数
     'per-page' => [
