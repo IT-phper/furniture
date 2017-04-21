@@ -96,6 +96,14 @@ class User extends \yii\db\ActiveRecord
     }
 
     /**
+     * 关联shops表
+     */
+    public function getShops()
+    {
+        return $this->hasOne(Shops::className(), ['id' => 'shop_id']);
+    }
+
+    /**
      * 验证登录账号和密码
      */
     public static function validatePassword($username, $password)

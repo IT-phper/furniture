@@ -26,6 +26,7 @@ class AuthController extends BaseController
 
 			//赋值
 			$user->username = $data['username'];
+			$user->shop_id = $data['shop_id'];
 			$user->role = $data['role'];
 			$user->real_name = $data['real_name'];
 			$user->status = User::USER_TABLE_STATUS_ACTIVE;
@@ -57,7 +58,9 @@ class AuthController extends BaseController
 			->searchUsername($queryParams['username'])
 			->searchRealname($queryParams['real_name'])
 			->searchRole($queryParams['role'])
-			->searchStatus($queryParams['status']);
+			->searchStatus($queryParams['status'])
+			->searchShop_id($queryParams['shop_id']);
+
 
 		//分页
  		$pagination = new Pagination(['totalCount' => $model->count(), 'pageSize' => $pageSize]);
@@ -78,6 +81,7 @@ class AuthController extends BaseController
 		if ($post_data = Yii::$app->request->post()) {
 			$user = User::findOne($post_data['id']);
 			$user->role = $post_data['role'];
+			$user->shop_id = $post_data['shop_id'];
 			if ($user->save()) {
 				OperateLog::insertLog(101, 
             		$user->id,

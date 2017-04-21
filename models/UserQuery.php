@@ -53,4 +53,10 @@ class UserQuery extends \yii\db\ActiveQuery
         if (!$status && $status !== '0') return $this;
         return $this->andWhere(['user.status' => trim($status)]);
     }
+
+    public function searchShop_id($shop_id = null)
+    {
+        if (!$shop_id) return $this;
+        return $this->andWhere(['user.shop_id' => trim($shop_id)]);
+    }
 }

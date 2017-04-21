@@ -1,6 +1,7 @@
 <?php 
 
 use app\models\Role;
+use app\models\Shops;
 use app\models\User;
 use yii\widgets\LinkPager;
 
@@ -99,6 +100,19 @@ $this->params['breadcrumbs'][] = $this->title;
                             </select>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="administrators-group">管理员管理分店</label>
+                        <div class="col-md-6">
+                            <select id="administrators-group" class="form-control" name='AdminUsers[shop_id]'>
+                                <?php 
+                                    $data  = [0 => 'all shops'] + Shops::getShopsList();
+                                    foreach ($data as $id => $name) { 
+                                        echo '<option value="' . $id . '">' . $name . '</option>';
+                                    }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
                         <button type="submit" class="btn btn-primary">保存</button>
@@ -116,6 +130,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <th style="width:90px;">真实姓名</th>
                 <th class="width:160px">管理员组</th>
                 <th style="width:80px;">状态</th>
+                <th style="width:100px;">管理分店</th>
                 <th style="width:160px;">添加时间</th>
                 <th style="width:206px;">操作</th>
             </tr>
@@ -149,6 +164,16 @@ $this->params['breadcrumbs'][] = $this->title;
                         ?>
                     </select>
                 </td>
+                <td>
+                    <select class="form-control" name="shop_id" style="padding:6px 2px">
+                        <?php 
+                            $shop  = [' ' => '全部'] + Shops::getShopsList();
+                            foreach ($shop as $k => $v) {
+                                $default = Yii::$app->request->queryParams['shop_id'] == $k ? 'selected' : '';
+                                echo "<option value= {$k} {$default}>{$v}</option>";
+                            }
+                        ?>
+                </td>
                 <td><input id="pickTime" class="form-control" type="text" name="time" value="" readonly></td>
                 <td></td>
             </tr>
@@ -160,6 +185,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 <td data-canEdit="true" data-type="select" data-source="area"><span><?= $user->role0->name ?></span></td>
                 <?= 
                    $user['status'] == User::USER_TABLE_STATUS_ACTIVE ? '<td>启用</td>' : '<td>暂停</td>';
+                ?>
+                <?=
+                   $user['shop_id'] == 0 ? '<td>all shops</td>': "<td>{$user->shops->name}</td>";
                 ?>
                 <td data-canEdit="true" data-type="input" style="min-width:152px;"><span><?= $user['created'] ?></span></td>
                 <td>
@@ -280,6 +308,19 @@ $this->params['breadcrumbs'][] = $this->title;
                         </div>
                     </div>
             </div>
+            <div class="form-group">
+                        <label class="control-label col-md-4" for="administrators-group">管理员管理分店</label>
+                        <div class="col-md-6">
+                            <select id="administrators-group" class="form-control" name='shop_id'>
+                                <?php 
+                                    $data  = [0 => 'all shops'] + Shops::getShopsList();
+                                    foreach ($data as $id => $name) { 
+                                        echo '<option value="' . $id . '">' . $name . '</option>';
+                                    }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
                 <button type="submit" class="btn btn-primary j-save-btn">保存</button>

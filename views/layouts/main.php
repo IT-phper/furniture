@@ -14,6 +14,7 @@ use yii\bootstrap\Alert;
   <meta name="keywords" content="家具 销售管理 ERP">
   <meta name="description" content="家具销售管理系统">
   <meta name="author" content="ThemeBucket">
+  <title><?= $this->title?></title>
   <link rel="shortcut icon" href="#" type="/image/png">
 
 
@@ -58,7 +59,7 @@ use yii\bootstrap\Alert;
                 define('ACTION', Yii::$app->controller->action->id);   
 
                 /**
-                 * 侧边栏栏目函数
+                 * 侧边栏简化函数
                  */
                 function siderbar_controller($url, $icon, $name) {
                     $siderbar = [
@@ -87,14 +88,14 @@ use yii\bootstrap\Alert;
                 }
             ?>
             <ul class="nav nav-pills nav-stacked custom-nav">
-                <?php siderbar_controller('goods/index', 'fa-book', '商品信息管理'); ?>
+                <?php siderbar_controller('goods/index', 'fa-book', '商品信息综合管理'); ?>
                     <ul class="sub-menu-list">
                         <?php siderbar_action('goods', 'index', '商品信息'); ?>
                     </ul>
                 </li>
-                <?php siderbar_controller('shops/index', 'fa-hand-o-right', '连锁门店管理'); ?>
+                <?php siderbar_controller('shops/index', 'fa-hand-o-right', '连锁门店综合管理'); ?>
                     <ul class="sub-menu-list">
-                        <?php siderbar_action('shops', 'index', '连锁门店信息管理'); ?>
+                        <?php siderbar_action('shops', 'index', '连锁门店列表'); ?>
                     </ul>
                 </li>
                 <?php siderbar_controller('auth/index', 'fa-user', '管理员与授权'); ?>
@@ -206,7 +207,7 @@ use yii\bootstrap\Alert;
 
         <!--footer section start-->
         <footer>
-            2017 &copy; 家具销售管理系统 by <a href="" target="_blank">苏增光</a>
+            <!-- 2017 &copy; 家具销售管理系统 by <a href="" target="_blank">苏增光</a> -->
         </footer>
         <!--footer section end-->
 

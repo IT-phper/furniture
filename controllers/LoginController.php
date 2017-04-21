@@ -34,5 +34,3 @@ class LoginController extends Controller
 		return $this->redirect(['/login/index']);
 	}
 }
-
-?>

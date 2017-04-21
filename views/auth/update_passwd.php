@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-</head>
+<?php 
+    $this->title = '修改密码';
+?>
 <style type="text/css">
  .text-danger{
     display: none;
@@ -24,7 +21,7 @@
 <body>
 	<div id="change-pwd" class="panel panel-default" >
 		<div class="panel-heading">
-			<h3 class="">修改密码</h3>
+			<span>修改密码</span>
 		</div>
 		<form action="/auth/update_password" method="post" class="form-horizontal">
             <input type="hidden" name="_csrf" value="<?= Yii::$app->getRequest()->getCsrfToken()?>">

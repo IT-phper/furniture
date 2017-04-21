@@ -7,7 +7,6 @@ use app\models\Goods;
 use app\models\GoodsSearch;
 use app\models\OperateLog;
 use yii\web\NotFoundHttpException;
-use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
 
 /**
