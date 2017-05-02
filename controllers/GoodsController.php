@@ -6,6 +6,8 @@ use Yii;
 use app\models\Goods;
 use app\models\GoodsSearch;
 use app\models\OperateLog;
+use app\models\SGoods;
+use app\models\Shops;
 use yii\web\NotFoundHttpException;
 use yii\web\UploadedFile;
 
@@ -134,6 +136,20 @@ class GoodsController extends BaseController
         }
     }
 
+    public function actionAllocation($id)
+    {
+        if (($model = Goods::findOne($id)) !== null) {
+            $shops = Shops::getNumber($id);
+            // var_dump($shops);exit;
+            return $this->render(allocation, [
+                'model' => $model,
+                'shops' => $shops, 
+            ]);
+        }  else {
+            throw new NotFoundHttpException('The requested page does not exist.');
+        }          
+    }
+
     /**
      * Finds the Goods model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
@@ -149,4 +165,37 @@ class GoodsController extends BaseController
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+
+    public function actionExecAllo()
+    {
+        if ($data = Yii::$app->request->post()) {
+            // var_dump($data);exit;
+            $num = 0;
+            foreach ($data['Goods'] as $good) {
+                if ($good['sale_num'] == 0) continue;
+                $num += $good['sale_num'];
+                $exec = SGoods::find()->where(['shop_id' => $good['shop_id'] , 'fid' => $data['fid']])->one();
+                if ($exec) {
+                    //修改
+                    $exec->sale_num += $good['sale_num'];
+                    $exec->save();
+                } else {
+                    //新增
+                    $exec = new SGoods();
+                    $exec->created = date('Y-m-d H:i:s');
+                    $exec->fid = $data['fid'];
+                    $exec->shop_id = $good['shop_id'];
+                    $exec->sale_num = $good['sale_num'];
+                    $exec->save();
+                }
+            }
+            $goods = Goods::findOne($data['fid']);
+            $goods->num -= $num;
+            $goods->save();
+            Yii::$app->session->setFlash('success', '派发成功');
+            return $this->redirect('/goods/index');
+        }
+        
+    }
+
 }

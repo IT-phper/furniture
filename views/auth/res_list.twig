@@ -1,0 +1,304 @@
+<style type="text/css">
+.form-control.col-md-3 {
+    width: 25%;
+}
+.form-control.col-md-6 {
+    width: 50%;
+}
+.pagination-box .input-group {
+    margin: 20px 10px;
+}
+.pageSize-box {
+    display: inline-block;
+    width: 50px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+#modal-auth-operation .reason-box,#changes-pwd .reason-box{
+    border-top:1px dashed #666;
+    line-height:24px;
+    padding:5px 0;
+}
+#modal-auth-operation .reason-box > p,#changes-pwd .reason-box > p {
+    padding-left: 20px;
+}
+#modal-auth-operation .inner-box ,#changes-pwd .inner-box{
+    background-color:#ddd;
+    margin-bottom:20px;
+}
+.text-danger{
+    display: none;
+}
+.nav-tabs > li.active > a{
+    background-color: #eee;
+}
+
+</style>
+<div class="tab-box">
+    <div class="tab-content">
+        <div id="manage-server" class="tab-pane active">
+            <br>
+
+            <div class="btn-group">
+                <button class="btn btn-primary j-btn-add-server" type="button" data-toggle="modal" data-target="#modal-add-resource" data-event="add">添加资源</button>
+                <button class="btn btn-info" type="button" data-toggle="modal" data-target="#modal-add-resource-class">添加模块</button>
+            </div>
+            <hr>
+            <form action="/auth/res" id="localSearch" method="get">
+                <button class="hidden" type="submit"></button>
+                <table id="j-server-table" class="table table-bordered table-hover">
+
+                    <tr>
+                        <!-- <th><input type="checkbox" id="j-check-all-btn"></th> -->
+                        <th style="min-width:80px;">资源标识</th>
+                        <th class="col-md-3">控制器名称</th>
+                        <th class="col-md-3">动作名称</th>
+                        <th class="col-md-4">资源描述</th>
+                        <th style="min-width:110px;">所属模块</th>
+                        <th style="min-width:160px;">操作</th>
+                    </tr>
+
+                    <tr class="send">
+                        <!-- <td></td> -->
+                        <td><input type="text" class="form-control" name="id" {% if app.request.get('id') %} value="{{ app.request.get('id') }}" {% endif %}></td>
+                        <td><input type="text" class="form-control" name="controller" {% if app.request.get('controller') %} value="{{ app.request.get('controller') }}" {% endif %}></td>
+                        <td><input type="text" class="form-control" name="action" {% if app.request.get('action') %} value="{{ app.request.get('action') }}" {% endif %}></td>
+                        <td><input type="text" class="form-control" name="description" {% if app.request.get('description') %} value="{{ app.request.get('description') }}" {% endif %}></td>
+                        <td>
+                            <select class="form-control" name="module">
+                                <option value="">全部</option>
+                                {% for k,v in resource_class %}
+                                    <option value={{k}} {% if app.request.get('module') and app.request.get('module') == k %} selected {% endif %}>{{v}}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td></td>
+                    </tr>
+                    {% for res in resources %}
+                    <tr data-id={{res.rid}}>
+                        <!-- <td><input type="checkbox"></td> -->
+                        <td data-canEdit="true" data-type="input"><span>{{res.rid}}</span></td>
+                        <td data-canEdit="true" data-type="input"><span>{{res.controller}}</span></td>
+                        <td data-canEdit="true" data-type="input"><span>{{res.action}}</span></td>
+                        <td data-canEdit="true" data-type="input"><span>{{res.description}}</span></td>
+                        <td data-canEdit="true" data-type="input"><span>{{resource_class[res.module_id]}}</span></td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-danger" data-toggle="modal" data-target="#modal-auth-operation" data-mode="single" data-event="delete" type="button">删除</button>
+                                <button class="btn btn-default" data-toggle="modal" data-target="#modal-add-resource" data-mode="single" data-event="change" type="button">修改资源</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                <div class="pagination-box pull-right">
+                    <div class="input-group pull-left">
+                        <label class="control-label">每页显示</label>
+                        <div class="pageSize-box">
+                            <select id="pageSize" class="form-control" name="per-page">
+                                {% for per_page in app.params['per-page'] %}
+                                <option value="{{per_page}}" {% if app.request.get('per-page') and app.request.get('per-page') == per_page %} selected {% endif %}>{{per_page}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <nav class="pull-right">
+                        {{ LinkPager.widget({
+                            'firstPageLabel':'&laquo;&laquo;',
+                            'lastPageLabel':'&raquo;&raquo;',
+                            'pagination': pages
+                        }) | raw }}
+                    </nav>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="modal-add-resource" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal" raia-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">添加资源</h4>
+            </div>
+            <form action="/auth/res" class="form-horizontal" method="post">
+                <div class="modal-body">
+                    <input id="attachToken" class="hidden" type="text" name="_csrf" value="">
+                    <input class="hidden" type="text" name="uid" >
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="Resources[controller]">控制器名称</label>
+                        <div class="col-md-6">
+                            <input type="text" id="resource-name" class="form-control" placeholder="" name="Resources[controller]" required>
+                            <span class="pull-left">请填写新的控制器名称</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="Resources[action]">动作名称</label>
+                        <div class="col-md-6">
+                            <input type="text" id="act-name" class="form-control" placeholder="" name="Resources[action]" required>
+                            <span class="pull-left">请填写新的动作名称</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="Resources[description]">资源描述</label>
+                        <div class="col-md-6">
+                            <input type="text" id="resource-depict" class="form-control" placeholder="" name="Resources[description]" required>
+                            <span class="pull-left">请填写资源描述</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="Resources[module_id]">所属模块</label>
+                        <div class="col-md-6">
+                            <select id="status" class="form-control" name='Resources[module_id]'>
+                                {% for k,v in resource_class %}
+                                    <option value={{k}}>{{v}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div id="modal-add-resource-class" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal" raia-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">添加模块</h4>
+            </div>
+            <form action="/auth/module" class="form-horizontal" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="_csrf" value="{{app.request.getCsrfToken()}}" />
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="name">模块名称</label>
+                        <div class="col-md-6">
+                            <input type="text" id="name" class="form-control" name="name" required>
+                            <span class="pull-left">请填写新的模块名称</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div id="modal-auth-operation" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">&times;</button>
+                <h4 class="modal-title">确认<span class="tips">删除</span><span class="category">资源</span>吗?</h4>
+            </div>
+            <div class="modal-body clearfix">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <div class="col-md-10 col-md-offset-1">
+                            <textarea class="form-control" rows="5"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary j-save-btn">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+$('#attachToken').val(2);
+$(function() {
+    var token = $('meta[name="csrf-token"]').attr('content');
+    $('#attachToken').attr('value', token);
+
+    //搜索模块
+    (function() {
+        $('#j-server-table .send .form-control:not("input")').on('change', function() {
+            $('#localSearch').submit();
+        });
+    })();
+    //修改资源
+    (function(){
+        $('#modal-add-resource').on('show.bs.modal', function(event) {
+            var $obj = $(event.relatedTarget);
+            var dataEvent = $obj.attr('data-event');
+
+            if(dataEvent === 'change') {
+                var $tr = $obj.parents('tr');
+                var dataId = $tr.attr('data-id');
+
+                var $tds = $tr.children();
+
+                var controller = $tds.eq(1).text();
+                var action = $tds.eq(2).text();
+                var description = $tds.eq(3).text();
+                var belongModule = $tds.eq(4).text();
+
+                $(this).find('#resource-name').val(controller)
+                 .end().find('#act-name').val(action)
+                 .end().find('#resource-depict').val(description)
+                        .end().find('input[name="uid"]').val(dataId);
+
+                $(this).find('#status option:contains('+ belongModule +')').attr('selected', true);
+            } else {
+                $(this).find('form')[0].reset();
+                $(this).find('input[name="uid"]').val('');
+            }
+        });
+
+        $('#modal-auth-operation').on('show.bs.modal', function(event) {
+            var $obj = $(event.relatedTarget);
+            var dataEvent = $obj.attr('data-event');
+
+            var dataId = $obj.parents('tr').attr('data-id');
+
+            $(this).find('.modal-footer .j-save-btn').attr({
+                'data-id': dataId,
+                'data-event': dataEvent
+            });
+        });
+
+        $('#modal-auth-operation .j-save-btn').on('click', function() {
+            var $modal = $(this).parents('.modal');
+
+            var id = $(this).attr('data-id');
+            var reason = $modal.find('textarea').val();
+            var csrfToken = $('meta[name="csrf-token"]').attr("content");
+
+            var options = {
+                id: id,
+                reason: reason,
+                _csrf: csrfToken
+            };
+            $.post('/auth/res_delete', options, function(){
+                window.location.reload();
+            });
+        });
+    })();
+});
+$(function() {
+    //搜索模块
+    (function(){
+        $('#pageSize').on('change', function() {
+            $('#localSearch').submit();
+        });
+
+        $(document).on('keydown', function(event) {
+            var code = event.keyCode;
+            if(code === 13) {
+                $('#localSearch').submit();
+            }
+        });
+    })();
+});
+</script>

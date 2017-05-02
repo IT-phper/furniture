@@ -39,9 +39,9 @@ $this->params['breadcrumbs'][] = $this->title;
     background-color: #eee;
 }
 </style>
-<div class="btn-group">
+<!-- <div class="btn-group">
 	<button class="btn btn-primary j-btn-add-server" type="button" data-toggle="modal" data-target="#modal-add-usergroup">添加管理员组</button>
-</div>
+</div> -->
 
 <div id="modal-add-usergroup" class="modal fade" tabindex="-1">
     <div class="modal-dialog">
@@ -75,14 +75,14 @@ $this->params['breadcrumbs'][] = $this->title;
             <th style="width:152px;">管理员组名称</th>
             <th>包含管理员</th>
             <th style="width:152px;">添加时间</th>
-            <th style="min-width:100px;">操作</th>
+            <!-- <th style="min-width:100px;">操作</th> -->
         </tr>
 
         <tr class="send">
             <td><input type="text" class="form-control" name="name" value="<?= Yii::$app->request->queryParams['name']?>"></td>
             <td><input type="text" class="form-control" name="username" value="<?= Yii::$app->request->queryParams['username']?>"></td>
             <td><input id="pickTime" class="form-control" type="text" name="time" value="" readonly></td>
-            <td></td>
+            <!-- <td></td> -->
         </tr>
         <?php foreach ($data as $role) { ?>
         <tr data-id=<?= $role['role']?>>
@@ -97,12 +97,12 @@ $this->params['breadcrumbs'][] = $this->title;
                 ?>
             </td>
             <td data-canEdit="true" data-type="input"><span><?= $role['created']?></span></td>
-            <td>
+           <!--  <td>
                 <div class="btn-group btn-group-xs">
                     <button class="btn btn-danger" data-toggle="modal" data-target="#modal-server-operation" data-mode="single" data-event="delete" type="button">删除</button>
                     <button class="btn btn-default" data-toggle="modal" data-target="#modal-edit-usergroup" data-mode="single" data-event="enable" type="button">编辑</button>
                 </div>
-            </td>
+            </td> -->
         </tr>
         <?php } ?>
     </table>

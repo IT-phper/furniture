@@ -3,37 +3,44 @@
 use yii\helpers\Html;
 use yii\widgets\Breadcrumbs;
 use yii\bootstrap\Alert;
+use app\models\Shops;
+use app\models\User;
 
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <?= Html::csrfMetaTags() ?>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <meta name="keywords" content="家具 销售管理 ERP">
-  <meta name="description" content="家具销售管理系统">
-  <meta name="author" content="ThemeBucket">
-  <title><?= $this->title?></title>
-  <link rel="shortcut icon" href="#" type="/image/png">
+    <meta charset="utf-8">
+    <?= Html::csrfMetaTags() ?>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="keywords" content="家具 销售管理 ERP">
+    <meta name="description" content="家具销售管理系统">
+    <meta name="author" content="ThemeBucket">
+    <title><?= $this->title?></title>
+    <link rel="shortcut icon" href="#" type="/image/png">
 
 
-  <!--icheck-->
-  <link href="/js/iCheck/skins/minimal/minimal.css" rel="stylesheet">
-  <link href="/js/iCheck/skins/square/square.css" rel="stylesheet">
-  <link href="/js/iCheck/skins/square/red.css" rel="stylesheet">
-  <link href="/js/iCheck/skins/square/blue.css" rel="stylesheet">
+    <!--icheck-->
+    <link href="/js/iCheck/skins/minimal/minimal.css" rel="stylesheet">
+    <link href="/js/iCheck/skins/square/square.css" rel="stylesheet">
+    <link href="/js/iCheck/skins/square/red.css" rel="stylesheet">
+    <link href="/js/iCheck/skins/square/blue.css" rel="stylesheet">
 
-  <!--dashboard calendar-->
-  <link href="/css/clndr.css" rel="stylesheet">
+    <!--dashboard calendar-->
+    <link href="/css/clndr.css" rel="stylesheet">
 
-  <!--Morris Chart CSS -->
-  <link rel="stylesheet" href="/js/morris-chart/morris.css">
+    <!--Morris Chart CSS -->
+    <link rel="stylesheet" href="/js/morris-chart/morris.css">
 
-  <!--common-->
-  <link href="/css/style.css" rel="stylesheet">
-  <link href="/css/style-responsive.css" rel="stylesheet">
-  <script src="/js/jquery-1.10.2.min.js"></script>
+    <!--common-->
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/style-responsive.css" rel="stylesheet">
+
+    <!-- swal -->
+    <link rel="stylesheet" type="text/css" href="/dist/sweetalert.css">
+
+    <script src="/js/jquery-1.10.2.min.js"></script>
+    <script src="/dist/sweetalert.min.js"></script>
 
 </head>
 
@@ -63,9 +70,10 @@ use yii\bootstrap\Alert;
                  */
                 function siderbar_controller($url, $icon, $name) {
                     $siderbar = [
+                        'branch/index' => ['branch/index', 'auth/shop', 'branch/sale'],
                         'goods/index' => ['goods/index'],
                         'shops/index' => ['shops/index'],
-                        'auth/index' => ['auth/index', 'auth/role', 'auth/update_password'],
+                        'auth/index' => ['auth/index', 'auth/role', 'auth/res', 'auth/batch_auth', 'auth/update_password'],
                     ];
                     if (in_array(CONTROLLER . '/' . ACTION, $siderbar[$url])) {
                         echo '<li class="menu-list nav-active">';
@@ -88,6 +96,13 @@ use yii\bootstrap\Alert;
                 }
             ?>
             <ul class="nav nav-pills nav-stacked custom-nav">
+                <?php siderbar_controller('branch/index', 'fa-anchor', '我的分店管理'); ?>
+                    <ul class="sub-menu-list">
+                        <?php siderbar_action('branch', 'index', '商品库存信息'); ?>
+                        <?php siderbar_action('auth', 'shop', '分店管理员'); ?>
+                        <?php siderbar_action('branch', 'sale', '商品销售管理'); ?>
+                    </ul>
+                </li>
                 <?php siderbar_controller('goods/index', 'fa-book', '商品信息综合管理'); ?>
                     <ul class="sub-menu-list">
                         <?php siderbar_action('goods', 'index', '商品信息'); ?>
@@ -102,6 +117,8 @@ use yii\bootstrap\Alert;
                     <ul class="sub-menu-list">
                         <?php siderbar_action('auth', 'index', '管理员列表'); ?>
                         <?php siderbar_action('auth', 'role', '管理员组列表'); ?>
+                        <?php siderbar_action('auth', 'res', '资源列表'); ?>
+                        <?php siderbar_action('auth', 'batch_auth', '权限分配'); ?>
                         <?php siderbar_action('auth', 'update_password', '修改密码'); ?>
                     </ul>
                 </li>
@@ -121,7 +138,20 @@ use yii\bootstrap\Alert;
             <!--toggle button start-->
             <a class="toggle-btn"><i class="fa fa-bars"></i></a>
             <!--toggle button end-->
-
+            <?php 
+                $shop_id = Yii::$app->user->identity->shop_id;
+                if ($shop_id) {
+                    $shop = Shops::findone($shop_id);
+                echo '<button class="btn btn-info btn-lg" type="button" style="margin-left:3%">' . $shop->name . '</button>';
+                $leaders = User::find()->where(['shop_id' => $shop_id, 'role' => 148])->all();
+                $lead = '';
+                foreach ($leaders as $leader) {
+                    $lead .= $leader->real_name . ' ';
+                } 
+                echo '<button class="btn btn-info btn-lg" type="button" style="margin-left:3%">负责人: ' . $lead . '</button>';
+                }
+                
+            ?>
             <!--notification menu start -->
             <div class="menu-right">
                 <ul class="notification-menu">

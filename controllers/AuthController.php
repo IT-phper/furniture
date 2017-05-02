@@ -5,9 +5,13 @@ namespace app\controllers;
 use Yii;
 use app\models\Role;
 use app\models\User;
+use app\models\Resources;
+use app\models\ResourceClass;
+use app\models\ResourcesAuth;
 use app\components\Salt;
 use app\models\OperateLog;
 use yii\data\Pagination;
+use yii\helpers\ArrayHelper;
 
 class AuthController extends BaseController
 {
@@ -72,6 +76,78 @@ class AuthController extends BaseController
 			'pagination' => $pagination,
 		]);
 	}
+
+    /**
+     * 分店管理员列表
+     */
+    public function actionShop()
+    {
+        $shop_id = Yii::$app->user->identity->shop_id;
+
+        //查询
+        $queryParams = Yii::$app->request->queryParams;
+        $pageSize = $queryParams['per-page'] ? $queryParams['per-page'] : 5;
+        $model = User::find()
+            ->searchUsername($queryParams['username'])
+            ->searchRealname($queryParams['real_name'])
+            ->searchRole('149')
+            ->searchStatus($queryParams['status'])
+            ->searchShop_id($shop_id);
+
+
+        //分页
+        $pagination = new Pagination(['totalCount' => $model->count(), 'pageSize' => $pageSize]);
+        $users = $model->offset($pagination->offset)
+            ->limit($pagination->limit)
+            ->all();
+        return $this->render('shop', [
+            'users' => $users,
+            'pagination' => $pagination,
+        ]);
+
+    }
+
+    /**
+     * 新增分店管理员
+     */
+    public function actionNew_shop_user()
+    {
+        $shop_id = Yii::$app->user->identity->shop_id;
+
+        $user = new user(); 
+
+        //添加管理员
+        if ($post_data = Yii::$app->request->post()) {
+            $data = $post_data['AdminUsers'];
+            $info = Salt::generateSalt($data['password']);
+
+            //赋值
+            $user->username = $data['username'];
+            $user->shop_id = $shop_id;
+            $user->role = 149;
+            $user->real_name = $data['real_name'];
+            $user->status = User::USER_TABLE_STATUS_ACTIVE;
+            $user->created = date('Y-m-d H:i:s');
+            $user->password = $info['hash'];
+            $user->salt = $info['salt'];
+
+            if ($user->save()){
+                //记录日志
+                OperateLog::insertLog(101, 
+                    $user->id,
+                    Yii::$app->user->id,
+                    Yii::$app->request->getUserIP(),
+                    OperateLog::OPERATE_TYPE_APPEND,
+                    '添加管理员' . $user->real_name,
+                    '添加管理员'
+                    );
+                Yii::$app->session->setFlash('success', '新建管理员成功');
+                return $this->redirect(['/auth/shop']);
+            }
+            Yii::$app->session->setFlash('error', '新建管理员失败');
+            return $this->redirect(['/auth/shop']);
+        }
+    }
 
 	/**
 	 *管理员编辑
@@ -315,5 +391,190 @@ class AuthController extends BaseController
         }
         return $this->render('update_passwd.php');		
 	}
+
+
+	/**
+     * 资源列表
+     */
+    public function actionRes()
+    {
+        $model = new Resources;
+
+        $data = Yii::$app->request->post();
+
+        if (!empty($data['uid'])) {
+            $res = Resources::findOne($data['uid']);
+            unset($data['uid']);
+            $res->load($data);
+            $res->update();
+            $this->_syncRoleAuth_edit($res);
+            // $this->_setSuccessFlash('资源修改成功');
+            return $this->redirect('/auth/res');
+        }
+
+        $res = Resources::find()->where([
+            'controller' => $data['Resources']['controller'],
+            'action' => $data['Resources']['action'],
+        ])->count();
+
+        if ($res != '0') {
+            // $this->_setErrorFlash('创建失败 请检查是否存在重复');
+            return $this->redirect(['/auth/res']);
+        }
+
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->save()) {
+                $this->_syncRoleAuth($model);
+                // $this->_setSuccessFlash('资源创建成功');
+            } else {
+                // $this->_setErrorFlash('创建失败 请检查日志');
+            }
+            return $this->redirect(['/auth/res']);
+        }
+
+        $query_params = Yii::$app->request->queryParams;
+        $currentPage = $query_params['page'] ? $query_params['page'] : 1;
+        $pageSize = $query_params['per-page'] ? $query_params['per-page'] : 10;
+
+        $resources = Resources::find()
+            ->searchId($query_params['id'])
+            ->searchController($query_params['controller'])
+            ->searchAction($query_params['action'])
+            ->searchDescripiton($query_params['description'])
+            ->searchModule($query_params['module'])
+            ->orderBy('rid DESC');
+        $pageInfo = $this->_page($resources, $currentPage, $pageSize);
+
+        $resource_class = ResourceClass::find()->all();
+        return $this->render('res_list.twig', [
+            'resource_class' => ArrayHelper::map($resource_class, 'id', 'name'),
+            'resources' => $pageInfo['data'],
+            'pages' => $pageInfo['pages'],
+        ]);
+    }
+
+    /**
+     * 同步新资源到授权表所有用户组
+     */
+    private function _syncRoleAuth($model)
+    {
+        foreach (Role::find()->all() as $role) {
+            $auth = new ResourcesAuth;
+            $auth->frid = $model->rid;
+            $auth->uid = $role->role;
+            $auth->controller = $model->controller;
+            $auth->action = $model->action;
+            $auth->status = 0;
+            $auth->save();
+        }
+    }
+
+    /**
+     * 删除资源
+     */
+    public function actionRes_delete()
+    {
+        $data = Yii::$app->request->post();
+        Resources::findOne($data['id'])->delete();
+
+        // $operate_log = new OperateLogModel;
+        // $do_id = \Yii::$app->adminUser->id;
+        // $ip = \Yii::$app->request->getUserIP();
+        // $operate_log->insertLog('112',
+        //     $user->uid, $do_id, $ip,
+        //     3, "删除资源ID $data[id]", $data['reason']);
+        // $this->_setErrorFlash('资源已删除');
+    }
+
+    /**
+     * 同步新资源到授权表所有用户组 编辑资源时
+     */
+    private function _syncRoleAuth_edit($model)
+    {
+            $auth = ResourcesAuth::findAll([
+                'frid' => $model->rid,
+                ]);
+            foreach ($auth as $key => $value) {
+                $res = ResourcesAuth::findOne($value->rid);
+                $res->controller = $model->controller;
+                $res->action = $model->action;
+                $res->update();
+            }
+        
+    }
+
+	/**
+     * 批量权限分配
+     */
+    public function actionBatch_auth()
+    {
+
+        $grant_res_list = Yii::$app->request->post()['result'];
+
+        if ($grant_res_list) {
+            ResourcesAuth::updateAll(['status' => 0]);
+            foreach ($grant_res_list as $uid => $res_list) {
+                foreach ($res_list as $rid) {
+                    ResourcesAuth::updateAll(
+                        ['status' => 1], "uid = $uid and frid = $rid");
+                }
+            }
+            // $this->_setSuccessFlash('批量授权修改成功');
+            return $this->redirect(['/auth/batch_auth']);
+        }
+
+        $roles = Role::find()->all();
+        $resources = Resources::find()->all();
+        $res_class = ResourceClass::find()->all();
+
+        $resource_module = [];
+        foreach ($resources as $key => $value) {
+            $resource_module[][$value['module_id']] = $value;
+        }
+
+        return $this->render('batch_auth.twig', [
+            'roles' => $roles,
+            'resources' => $resources,
+            'resource_class' => ArrayHelper::map($res_class, 'id', 'name'),
+            'resource_module' => ArrayHelper::toArray($resource_module)
+        ]);
+    }
+
+    /**
+     * 返回批量授权中已存在权限列表
+     */
+    public function actionHas_been_auth()
+    {
+        \Yii::$app->response->format = 'json';
+        $role_res = [];
+
+        $roles = Role::find()->all();
+        $resource_auth = ArrayHelper::toArray(
+            ResourcesAuth::findAll(['status' => 1]));
+
+        foreach ($roles as $role) {
+            foreach ($resource_auth as $k => $v) {
+                if ($v['uid'] == $role->role) {
+                    $role_res[$role->role][] = $v['frid'];
+                }
+            }
+        }
+        return $role_res;
+    }
+
+    /**
+     * 模块添加
+     */
+    public function actionModule()
+    {
+        if ($post_data = Yii::$app->request->post()) {
+            $ResourceClass = new ResourceClass();
+            $ResourceClass->name = $post_data['name'];
+            if ($ResourceClass->save()) {
+                Yii::$app->session->setFlash('success', '模块已添加');
+                return $this->redirect(['/auth/res']);
+            }
+        }
+    }
 
 } 

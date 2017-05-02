@@ -11,6 +11,28 @@ $config = [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'e7LIJn4j_zNYEQVcD-9Z45_WTiolw4AP',
         ],
+        'view' => [
+            'class' => 'yii\web\View',
+            'renderers' => [
+                'tpl' => [
+                    'class' => 'yii\smarty\ViewRenderer',
+                    //'cachePath' => '@runtime/Smarty/cache',
+                ],
+                'twig' => [
+                    'class' => 'yii\twig\ViewRenderer',
+                    'cachePath' => '@runtime/Twig/cache',
+                    'options' => ['auto_reload' => true], /*  Array of twig options */
+                    'globals' => [
+                        'html' => '\yii\helpers\Html',
+                        'LinkPager' => '\yii\widgets\LinkPager',
+                    ],
+                ],
+                // ...
+            ],
+            'theme' => [
+                'basePath' => '@app/themes/mobile',
+            ],
+        ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],

@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use app\models\SGoods;
 
 /**
  * This is the model class for table "shops".
@@ -77,4 +78,16 @@ class Shops extends \yii\db\ActiveRecord
         return $this->hasMany(User::className(), ['shop_id' => 'id']);
     }
 
+    //根据总部商品id获取商店库存数量
+    public static function getNumber($id)
+    {
+        $data = self::find()->select(['id', 'name'])->orderBy('id ASC')->where(['status' => 1])->asArray()->all();
+        $array = [];
+        foreach ($data as $v => $shop) {
+            $array[$v] = $shop;
+            $number = SGoods::find()->select('sale_num')->where(['shop_id' => $shop['id'], 'fid' => $id])->asArray()->one()['sale_num'];
+            $array[$v]['number'] = $number ? $number : 0;
+        }
+        return $array;
+    }
 }

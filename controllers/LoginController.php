@@ -22,7 +22,7 @@ class LoginController extends Controller
 				Yii::$app->user->login(UserIdentity::findByUsername($post_data['username']), $post_data['rememberMe'] == 'rememberMe' ? 3600*24*30 : 0);
 				return $this->redirect('/');
 			} else {
-				Yii::$app->session->setFlash('error', '您输入的账号或密码有误');
+				Yii::$app->session->setFlash('error', '您输入的账号或密码有误,或分店异常');
 			}
 		}
 		return $this->render('login');

@@ -109,8 +109,15 @@ class User extends \yii\db\ActiveRecord
     public static function validatePassword($username, $password)
     {
         $data = self::find()->where(['username' => $username, 'status' => self::USER_TABLE_STATUS_ACTIVE])->asArray()->one();
-        if (!$data) return false;
-        if ($data['password'] === Salt::verifySalt($password, $data['salt'])) return true;
+        if ($data) {
+            //验证自己店铺是否处于正常营业
+            if ($data['shop_id']) {
+                $shop = Shops::findOne($data['shop_id']);
+                if ($shop->status !== 1) return false;
+            }
+
+            if ($data['password'] === Salt::verifySalt($password, $data['salt'])) return true;
+        }     
         return false;
     }
 

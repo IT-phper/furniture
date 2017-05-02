@@ -53,6 +53,7 @@ $this->params['breadcrumbs'][] = $this->title;
             [
                 'class' => 'yii\grid\ActionColumn',
                 'header' => '操作',
+                'template'=> '{view} {update} {delete} {allocation}',
                 'buttons' => [
                     'view' => function($url, $model, $key) {
                         return Html::a('<i class="fa fa-vimeo-square"></i> 查看', ['view', 'id' => $key]);
@@ -63,6 +64,9 @@ $this->params['breadcrumbs'][] = $this->title;
                     'delete' => function($url, $model, $key) {
                         return Html::a('<i class="fa fa-ban"></i> 删除', ['delete', 'id' => $key]);
                     },
+                    'allocation' => function($url, $model, $key) {
+                        return Html::a('<i class="fa fa-angle-double-right"></i> 派发', ['allocation', 'id' => $key]);
+                    }
                 ],
             ],
         ],
