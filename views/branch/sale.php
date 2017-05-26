@@ -2,7 +2,7 @@
 
 use yii\helpers\Html;
 
-$this->title = '商品销售列表';
+$this->title = '商品销售管理';
 $this->params['breadcrumbs'][] = $this->title;
 
 ?>
@@ -18,7 +18,7 @@ $this->params['breadcrumbs'][] = $this->title;
     </tr>
     </thead>
     <tbody>
-    <form method="post" action="/branch/do_sale">
+    <form method="post" action="/branch/do_sale" id="sale">
     	<input type="hidden" name="shop_id" value="<?= $shop_id?>">
    		<input type="hidden" name="_csrf" value="<?= Yii::$app->getRequest()->getCsrfToken()?>">
    		<input type="hidden" name="total">
@@ -34,6 +34,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
             ?>
         </td>
+        <input type="hidden" name="Sale[<?=$shop->goods->id?>][id]" value="<?=$shop->id?>">
+        <input type="hidden" name="Sale[<?=$shop->goods->id?>][retail_price]" value="<?=$shop->sale_price?>">
         <td><?=$shop->sale_price?></td>
         <td><?=$shop->sale_num?></td>
         <td><input type="number" class="sale" min="0" name="Sale[<?=$shop->goods->id?>][order_num]"></td>
@@ -74,4 +76,12 @@ $('.sale').on('change', function() {
 	$('.total').html(num);
 	$("input[name='total']").val(num);
 })
+
+$('#sale').submit(function(){
+	var tot = $('.total').html();
+	if (tot == 0) {
+		swal("未选择商品", "", "error");
+		return false;
+	}
+});
 </script>

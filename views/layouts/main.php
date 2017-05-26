@@ -19,6 +19,12 @@ use app\models\User;
     <title><?= $this->title?></title>
     <link rel="shortcut icon" href="#" type="/image/png">
 
+    <!--pickers css-->
+    <link rel="stylesheet" type="text/css" href="/js/bootstrap-datepicker/css/datepicker-custom.css" />
+    <link rel="stylesheet" type="text/css" href="/js/bootstrap-timepicker/css/timepicker.css" />
+    <link rel="stylesheet" type="text/css" href="/js/bootstrap-colorpicker/css/colorpicker.css" />
+    <link rel="stylesheet" type="text/css" href="/js/bootstrap-daterangepicker/daterangepicker-bs3.css" />
+    <link rel="stylesheet" type="text/css" href="/js/bootstrap-datetimepicker/css/datetimepicker-custom.css" />
 
     <!--icheck-->
     <link href="/js/iCheck/skins/minimal/minimal.css" rel="stylesheet">
@@ -70,10 +76,10 @@ use app\models\User;
                  */
                 function siderbar_controller($url, $icon, $name) {
                     $siderbar = [
-                        'branch/index' => ['branch/index', 'auth/shop', 'branch/sale'],
-                        'goods/index' => ['goods/index'],
-                        'shops/index' => ['shops/index'],
-                        'auth/index' => ['auth/index', 'auth/role', 'auth/res', 'auth/batch_auth', 'auth/update_password'],
+                        'branch/index' => ['branch/index', 'branch/sale', 'branch/list', 'branch/dolog', 'chart/shop', 'auth/shop'],
+                        'goods/index' => ['goods/index', 'goods/dolog'],
+                        'shops/index' => ['shops/index', 'shops/dolog'],
+                        'auth/index' => ['auth/index', 'auth/role', 'auth/res', 'auth/batch_auth', 'auth/update_password', 'auth/dolog'],
                     ];
                     if (in_array(CONTROLLER . '/' . ACTION, $siderbar[$url])) {
                         echo '<li class="menu-list nav-active">';
@@ -99,18 +105,23 @@ use app\models\User;
                 <?php siderbar_controller('branch/index', 'fa-anchor', '我的分店管理'); ?>
                     <ul class="sub-menu-list">
                         <?php siderbar_action('branch', 'index', '商品库存信息'); ?>
-                        <?php siderbar_action('auth', 'shop', '分店管理员'); ?>
                         <?php siderbar_action('branch', 'sale', '商品销售管理'); ?>
+                        <?php siderbar_action('branch', 'list', '商品销售记录'); ?>
+                         <?php siderbar_action('branch', 'dolog', '总部派发记录'); ?>
+                        <?php siderbar_action('chart', 'shop', '销售额报表'); ?>
+                        <?php siderbar_action('auth', 'shop', '分店管理员'); ?>
                     </ul>
                 </li>
                 <?php siderbar_controller('goods/index', 'fa-book', '商品信息综合管理'); ?>
                     <ul class="sub-menu-list">
                         <?php siderbar_action('goods', 'index', '商品信息'); ?>
+                        <?php siderbar_action('goods', 'dolog', '操作日志'); ?>
                     </ul>
                 </li>
                 <?php siderbar_controller('shops/index', 'fa-hand-o-right', '连锁门店综合管理'); ?>
                     <ul class="sub-menu-list">
                         <?php siderbar_action('shops', 'index', '连锁门店列表'); ?>
+                        <?php siderbar_action('shops', 'dolog', '操作日志'); ?>
                     </ul>
                 </li>
                 <?php siderbar_controller('auth/index', 'fa-user', '管理员与授权'); ?>
@@ -120,6 +131,7 @@ use app\models\User;
                         <?php siderbar_action('auth', 'res', '资源列表'); ?>
                         <?php siderbar_action('auth', 'batch_auth', '权限分配'); ?>
                         <?php siderbar_action('auth', 'update_password', '修改密码'); ?>
+                        <?php siderbar_action('auth', 'dolog', '操作日志'); ?>
                     </ul>
                 </li>
             </ul>
@@ -143,7 +155,7 @@ use app\models\User;
                 if ($shop_id) {
                     $shop = Shops::findone($shop_id);
                 echo '<button class="btn btn-info btn-lg" type="button" style="margin-left:3%">' . $shop->name . '</button>';
-                $leaders = User::find()->where(['shop_id' => $shop_id, 'role' => 148])->all();
+                $leaders = User::find()->where(['shop_id' => $shop_id, 'role' => 148, 'status' => 1])->all();
                 $lead = '';
                 foreach ($leaders as $leader) {
                     $lead .= $leader->real_name . ' ';
@@ -155,7 +167,7 @@ use app\models\User;
             <!--notification menu start -->
             <div class="menu-right">
                 <ul class="notification-menu">
-                    <li>
+                   <!--  <li>
                         <a href="#" class="btn btn-default dropdown-toggle info-number" data-toggle="dropdown">
                             <i class="fa fa-envelope-o"></i>
                             <span class="badge">5</span>
@@ -184,7 +196,7 @@ use app\models\User;
                                 <li class="new"><a href="">Read All Mails</a></li>
                             </ul>
                         </div>
-                    </li>
+                    </li> -->
                     <li>
                         <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                         <?= Yii::$app->user->identity->username; ?>
@@ -237,7 +249,7 @@ use app\models\User;
 
         <!--footer section start-->
         <footer>
-            <!-- 2017 &copy; 家具销售管理系统 by <a href="" target="_blank">苏增光</a> -->
+            2017 &copy; 家具销售管理系统 by <a href="" target="_blank">苏增光</a>
         </footer>
         <!--footer section end-->
 
@@ -286,6 +298,17 @@ use app\models\User;
 
 <!--Dashboard Charts-->
 <script src="/js/dashboard-chart-init.js"></script>
+
+<!--pickers plugins-->
+<script type="text/javascript" src="/js/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="/js/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"></script>
+<script type="text/javascript" src="/js/bootstrap-daterangepicker/moment.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap-daterangepicker/daterangepicker.js"></script>
+<script type="text/javascript" src="/js/bootstrap-colorpicker/js/bootstrap-colorpicker.js"></script>
+<script type="text/javascript" src="/js/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
+
+<!--pickers initialization-->
+<script src="/js/pickers-init.js"></script>
 
 
 </body>

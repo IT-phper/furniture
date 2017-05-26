@@ -353,14 +353,6 @@ class AuthController extends BaseController
 	}
 
 	/**
-	 * 操作日志
-	 */
-	public function actionDolog()
-	{
-		
-	}
-
-	/**
 	 * 修改密码
 	 */
 	public function actionUpdate_password()
@@ -536,7 +528,7 @@ class AuthController extends BaseController
             'roles' => $roles,
             'resources' => $resources,
             'resource_class' => ArrayHelper::map($res_class, 'id', 'name'),
-            'resource_module' => ArrayHelper::toArray($resource_module)
+            'resource_module' => ArrayHelper::toArray($resource_module),
         ]);
     }
 
@@ -575,6 +567,36 @@ class AuthController extends BaseController
                 return $this->redirect(['/auth/res']);
             }
         }
+    }
+
+
+    /**
+     * 操作日志
+     */
+    public function actionDolog()
+    {
+        $query_params = Yii::$app->request->queryParams;
+        // list($query_params['start'], $query_params['end']) = explode('--', $query_params['time']);
+        $currentPage = $query_params['page'] ? $query_params['page'] : 1;
+        $pageSize = $query_params['per-page'] ? $query_params['per-page'] : 5;
+
+        $dologs = OperateLog::find()
+            ->innerJoinWith('user')
+            ->where(['module' => 101])
+            ->orderBy('created DESC')
+            ->searchDoUser($query_params['doUser'])
+            ->searchIp($query_params['ip'])
+            // ->searchType($query_params['type'])
+            ->searchLog($query_params['log'])
+            ->searchReason($query_params['reason']);
+            // ->searchAll($query_params['search']);
+
+        $pageInfo = $this->_page($dologs, $currentPage, $pageSize);
+
+        return $this->render('dolog.twig', [
+            'dologs' => $pageInfo['data'],
+            'pages' => $pageInfo['pages'],
+        ]);
     }
 
 } 

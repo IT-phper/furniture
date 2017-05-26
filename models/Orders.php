@@ -60,4 +60,14 @@ class Orders extends \yii\db\ActiveRecord
     {
         return new OrdersQuery(get_called_class());
     }
+
+    public function getUser()
+    {
+        return $this->hasOne(User::className(), ['id' => 'user_id']);
+    }
+
+    public function getShops()
+    {
+        return $this->hasOne(Shops::className(), ['id' => 'shop_id']);
+    }
 }

@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use app\models\Shops;
 use yii\data\Pagination;
+use app\models\OperateLog;
 
 class ShopsController extends BaseController
 {
@@ -15,6 +16,13 @@ class ShopsController extends BaseController
 			$model = new Shops();
 			$model->created = date('Y-m-d H:i:s');
 			if ($model->load($post_data['Shops'], '') && $model->save()) {
+				OperateLog::insertLog(104, 
+            		$model->id,
+            		Yii::$app->user->id,
+            		Yii::$app->request->getUserIP(),
+            		OperateLog::OPERATE_TYPE_APPEND,
+            		'添加分店：' . $model->name
+            		);
 				Yii::$app->session->setFlash('success', '添加分店成功');
 	         	return $this->redirect(['/shops/index']);
 			}
@@ -51,6 +59,13 @@ class ShopsController extends BaseController
 		if ($post_data = Yii::$app->request->post()) {
 			$shop = Shops::findOne($post_data['id']);
 			if ($shop->load($post_data['Shops'], '') && $shop->save()) {
+				OperateLog::insertLog(104, 
+            		$shop->id,
+            		Yii::$app->user->id,
+            		Yii::$app->request->getUserIP(),
+            		OperateLog::OPERATE_TYPE_APPEND,
+            		'更改分店信息' . $shop->name
+            		);
 				Yii::$app->session->setFlash('success', '修改信息成功');
 				return $this->redirect(['/shops/index']);
 			} 
@@ -73,28 +88,57 @@ class ShopsController extends BaseController
                 case '3':
                     $user->status = 3;
                     $user->update();
-                    // OperateLog::insertLog('101',
-                    //     $user->id, $do_id, $ip,
-                    //     3, "删除管理员 $user->real_name", $data['reason']);
+                    OperateLog::insertLog('104',
+                        $user->id, $do_id, $ip,
+                        3, "删除分店 $user->name", $data['reason']);
                     Yii::$app->session->setFlash('success', '分店已删除');
                     break;
                 case '2':
                     $user->status = 1;
                     $user->update();
-                    // OperateLog::insertLog('101',
-                    //     $user->id, $do_id, $ip,
-                    //     4, "启用管理员 $user->real_name", $data['reason']);
+                    OperateLog::insertLog('104',
+                        $user->id, $do_id, $ip,
+                        4, "启用分店 $user->name", $data['reason']);
                    	Yii::$app->session->setFlash('success', '分店已启用');
                     break;
                 case '1':
                     $user->status = 2;
                     $user->update();
-                   //  OperateLog::insertLog('101',
-                   //      $user->id, $do_id, $ip,
-                   //      5, "停用管理员 $user->real_name", $data['reason']);
+                    OperateLog::insertLog('104',
+                        $user->id, $do_id, $ip,
+                        5, "暂停分店 $user->name", $data['reason']);
                   	Yii::$app->session->setFlash('success', '分店已暂停');
                     break;
             }
 		}
+	}
+
+	 /**
+	 * 操作日志
+	 */
+	public function actionDolog()
+	{
+	    $query_params = Yii::$app->request->queryParams;
+	    // list($query_params['start'], $query_params['end']) = explode('--', $query_params['time']);
+	    $currentPage = $query_params['page'] ? $query_params['page'] : 1;
+	    $pageSize = $query_params['per-page'] ? $query_params['per-page'] : 5;
+
+	    $dologs = OperateLog::find()
+	        ->innerJoinWith('user')
+	        ->where(['module' => 104])
+	        ->orderBy('created DESC')
+	        ->searchDoUser($query_params['doUser'])
+	        ->searchIp($query_params['ip'])
+	        // ->searchType($query_params['type'])
+	        ->searchLog($query_params['log'])
+	        ->searchReason($query_params['reason']);
+	        // ->searchAll($query_params['search']);
+
+	    $pageInfo = $this->_page($dologs, $currentPage, $pageSize);
+
+	    return $this->render('../auth/dolog.twig', [
+	        'dologs' => $pageInfo['data'],
+	        'pages' => $pageInfo['pages'],
+	    ]);
 	}
 }

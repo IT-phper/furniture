@@ -24,7 +24,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <table class="table  table-hover general-table">
     <thead>
     <tr>
-        <th> 分店ID</th>
+        <th>分店ID</th>
         <th class="hidden-phone">分店Name</th>
         <th>分店库存</th>
         <th>分配</th>

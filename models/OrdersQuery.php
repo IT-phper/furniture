@@ -31,4 +31,14 @@ class OrdersQuery extends \yii\db\ActiveQuery
     {
         return parent::one($db);
     }
+
+    public function searchUsername($username)
+    {
+        return $this->andFilterWhere(['like', 'user.real_name', trim($username)]);
+    }
+
+    public function searchOrder_id($order_id = null)
+    {
+        return $this->andFilterWhere(['like', 'order_id', trim($order_id)]);
+    }
 }

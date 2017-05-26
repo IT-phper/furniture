@@ -19,7 +19,7 @@ class BaseController extends Controller
             return;
         }
         
-        return parent::beforeAction($action);
+        // return parent::beforeAction($action);
         if (parent::beforeAction($action)) {
             if (!$this->verifyAuth()) {
                 echo $this->render('/index/no_auth');

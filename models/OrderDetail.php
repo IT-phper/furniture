@@ -47,4 +47,9 @@ class OrderDetail extends \yii\db\ActiveRecord
             'retail_price' => 'Retail Price',
         ];
     }
+
+     public function getGoods()
+    {
+        return $this->hasOne(Goods::className(),['id' => 'goods_id']);
+    }
 }

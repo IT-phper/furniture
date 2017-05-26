@@ -90,4 +90,14 @@ class Shops extends \yii\db\ActiveRecord
         }
         return $array;
     }
+
+    public static function getlist()
+    {
+        return self::find()->select(['name'])->indexBy('id')->orderBy('id ASC')->column();
+    }
+
+    public static function getNameFromId($id)
+    {
+        return self::findOne($id)->name;
+    } 
 }

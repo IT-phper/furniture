@@ -66,4 +66,9 @@ class Goods extends \yii\db\ActiveRecord
             'picture' => '图片',
         ];
     }
+
+    public static function getNameFromId($id)
+    {
+        return self::findOne($id)->name;
+    }
 }

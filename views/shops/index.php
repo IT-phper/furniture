@@ -158,7 +158,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="modal-content">
             <div class="modal-header">
                 <button class="close" type="button" data-dismiss="modal" aria-label="Close">&times;</button>
-                <h4 class="modal-title">确认<span class="tips">删除</span>该管理员吗?</h4>
+                <h4 class="modal-title">确认<span class="tips">删除</span>该连锁分店吗?</h4>
             </div>
             <div class="modal-body clearfix">
                 <form class="form-horizontal">
@@ -182,7 +182,7 @@ $this->params['breadcrumbs'][] = $this->title;
           <form action="/shops/change_info" class="form-horizontal" method="post">
             <div class="modal-header">
                 <button class="close" type="button" data-dismiss="modal" aria-label="Close">&times;</button>
-                <h4 class="modal-title">更新管理员组</h4>
+                <h4 class="modal-title">编辑分店信息</h4>
             </div>
             <div class="modal-body clearfix">
                 <input type="hidden" name="id">

@@ -43,7 +43,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 </span></td>
                 <td data-canEdit="true" data-type="input" style=""><span><?= $good->sale_num?></span></td>
                 <td data-canEdit="true" data-type="input" style=""><span><?= $good->goods->price ?></span></td>
-                <td data-canEdit="true" data-type="input" style=""><span><?= $good->sale_price?></span></td>
+                <td data-canEdit="true" data-type="input" style=""><span><?= $good->sale_price?$good->sale_price:'商品未定价'?></span></td>
                 <td data-canEdit="true" data-type="input" style=""><span><?= $good->goods->spec?></span></td>
                 <td data-canEdit="true" data-type="input" style=""><span><?= date('Y-m-d', strtotime($good->created))?></span></td>
 

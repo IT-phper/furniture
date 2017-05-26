@@ -66,7 +66,7 @@ class GoodsController extends BaseController
                     Yii::$app->request->getUserIP(),
                     OperateLog::OPERATE_TYPE_APPEND,
                     '添加商品：' . $model->name,
-                    '入库商品'
+                    '总店入库商品'
                     );
                 return $this->redirect(['view', 'id' => $model->id]);
             }  
@@ -100,8 +100,8 @@ class GoodsController extends BaseController
                     Yii::$app->user->id,
                     Yii::$app->request->getUserIP(),
                     OperateLog::OPERATE_TYPE_ALTER,
-                    '修改商品信息：' . $model->name,
-                    '修改商品信息'
+                    '修改商品：' . $model->name,
+                    '修改商品'
                     );
                 return $this->redirect(['view', 'id' => $model->id]);
             }
@@ -169,8 +169,9 @@ class GoodsController extends BaseController
     public function actionExecAllo()
     {
         if ($data = Yii::$app->request->post()) {
-            // var_dump($data);exit;
+            $goods = Goods::findOne($data['fid']);
             $num = 0;
+            $log = [];
             foreach ($data['Goods'] as $good) {
                 if ($good['sale_num'] == 0) continue;
                 $num += $good['sale_num'];
@@ -178,7 +179,17 @@ class GoodsController extends BaseController
                 if ($exec) {
                     //修改
                     $exec->sale_num += $good['sale_num'];
-                    $exec->save();
+                    if ($exec->save()) {
+                        OperateLog::insertLog(103, 
+                        $exec->id,
+                        Yii::$app->user->id,
+                        Yii::$app->request->getUserIP(),
+                        OperateLog::OPERATE_TYPE_APPEND,
+                        '入库：' . Goods::getNameFromId($exec->fid),
+                        '总部派发数量:' . $good['sale_num'],
+                        $good['shop_id']
+                        );
+                    }
                 } else {
                     //新增
                     $exec = new SGoods();
@@ -186,16 +197,63 @@ class GoodsController extends BaseController
                     $exec->fid = $data['fid'];
                     $exec->shop_id = $good['shop_id'];
                     $exec->sale_num = $good['sale_num'];
-                    $exec->save();
+                    $exec->sale_price = $goods->price;
+                    if ($exec->save()) {
+                        OperateLog::insertLog(103, 
+                        $exec->id,
+                        Yii::$app->user->id,
+                        Yii::$app->request->getUserIP(),
+                        OperateLog::OPERATE_TYPE_APPEND,
+                        '新品入库：' . Goods::getNameFromId($exec->fid),
+                        '总部派发数量:' . $good['sale_num'],
+                        $good['shop_id']
+                        );
+                    }
                 }
+                $log[] = Shops::getNameFromId($good['shop_id']) . ':' . $good['sale_num'] . '件';
             }
-            $goods = Goods::findOne($data['fid']);
             $goods->num -= $num;
-            $goods->save();
-            Yii::$app->session->setFlash('success', '派发成功');
-            return $this->redirect('/goods/index');
+            if ($goods->save()) {
+                OperateLog::insertLog(102, 
+                    $goods->id,
+                    Yii::$app->user->id,
+                    Yii::$app->request->getUserIP(),
+                    OperateLog::OPERATE_TYPE_ALTER,
+                    '派发商品：' . $goods->name . ' 派发数量:' . $num,
+                    implode(',', $log)
+                    );
+                Yii::$app->session->setFlash('success', '派发成功');
+                return $this->redirect('/goods/index');
+            }       
         }
-        
     }
 
+    /**
+     * 操作日志
+     */
+    public function actionDolog()
+    {
+        $query_params = Yii::$app->request->queryParams;
+        // list($query_params['start'], $query_params['end']) = explode('--', $query_params['time']);
+        $currentPage = $query_params['page'] ? $query_params['page'] : 1;
+        $pageSize = $query_params['per-page'] ? $query_params['per-page'] : 5;
+
+        $dologs = OperateLog::find()
+            ->innerJoinWith('user')
+            ->where(['module' => 102])
+            ->orderBy('created DESC')
+            ->searchDoUser($query_params['doUser'])
+            ->searchIp($query_params['ip'])
+            // ->searchType($query_params['type'])
+            ->searchLog($query_params['log'])
+            ->searchReason($query_params['reason']);
+            // ->searchAll($query_params['search']);
+
+        $pageInfo = $this->_page($dologs, $currentPage, $pageSize);
+
+        return $this->render('../auth/dolog.twig', [
+            'dologs' => $pageInfo['data'],
+            'pages' => $pageInfo['pages'],
+        ]);
+    }
 }

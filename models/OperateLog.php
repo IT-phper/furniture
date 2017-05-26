@@ -11,6 +11,7 @@ use Yii;
  * @property integer $module
  * @property integer $doId
  * @property integer $doUser
+ * @property integer $doShop
  * @property integer $type
  * @property string $log
  * @property string $ip
@@ -34,6 +35,8 @@ class OperateLog extends \yii\db\ActiveRecord
     public $arModule = [
         101 => '管理员与授权',
         102 => '总店商品信息',
+        103 => '分店入库信息',
+        104 => '分店综合管理',
     ];
 
     /**
@@ -50,8 +53,8 @@ class OperateLog extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['module', 'doId', 'doUser', 'type', 'ip'], 'required'],
-            [['module', 'doId', 'doUser', 'type', 'status'], 'integer'],
+            [['module', 'doId', 'doUser', 'doShop', 'type', 'ip'], 'required'],
+            [['module', 'doId', 'doUser', 'doShop', 'type', 'status'], 'integer'],
             [['log'], 'string'],
             [['created'], 'safe'],
             [['ip', 'reason'], 'string', 'max' => 255],
@@ -68,6 +71,7 @@ class OperateLog extends \yii\db\ActiveRecord
             'module' => '所属模块',
             'doId' => '所属记录ID',
             'doUser' => '操作人',
+            'doShop' => '所属分店id',
             'type' => '操作类型',
             'log' => '操作详情',
             'ip' => '操作地IP, IP+归属地',
@@ -92,16 +96,18 @@ class OperateLog extends \yii\db\ActiveRecord
      * @param  integer $module 所属模块
      * @param  integer $doId   所属记录ID
      * @param  integer $doUser 操作人
+     * @param  integer $doShop 所属分店ID
      * @param  string    $ip     操作者IP
      * @param  integer $type 操作类型,1添加, 2修改, 3删除
      * @param  string   $log   详细操作日志
      * @param  string   $reason 操作原因
      */
-    public static function insertLog($module, $doId, $doUser, $ip, $type, $log='', $reason='') {
+    public static function insertLog($module, $doId, $doUser, $ip, $type, $log = '', $reason = '', $doShop = 0) {
         $model = new self();
         $model->module = $module;
         $model->doId = $doId;
         $model->doUser = $doUser;
+        $model->doShop = $doShop;
         $model->type = $type;
         $model->ip = $ip;
         $model->log = $log;
@@ -111,5 +117,10 @@ class OperateLog extends \yii\db\ActiveRecord
             return $model->id;
         }
         return false;
+    }
+
+    public function getUser()
+    {
+        return $this->hasOne(User::className(), ['id' => 'doUser']);
     }
 }
