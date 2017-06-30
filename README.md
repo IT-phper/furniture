@@ -1,2 +1,4 @@
 # furniture
-yii2.0 å®¶å…·é”€å”®ç®¡ç†ç³»ç»Ÿ Graduation Project
+yii2.0 ¼Ò¾ßÏúÊÛ¹ÜÀíÏµÍ³ Graduation Project
+composer install ÏÂÔØvender
+

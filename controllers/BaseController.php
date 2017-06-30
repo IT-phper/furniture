@@ -44,9 +44,16 @@ class BaseController extends Controller
 
         // 超级管理员和总部管理员
         if ($role_id == 146 || $role_id == 147) {
-            if (controller_id == 'branch') {
-                return $this->render('/index/403');
+            if ($controller_id == 'branch') {
+                echo $this->render('/index/403');
             }
+            if ($controller_id == 'chart' && $action_id == 'shop') {
+                echo $this->render('/index/403');
+            }
+            if ($controller_id == 'auth' && $action_id == 'shop') {
+                echo $this->render('/index/403');
+            }
+            
             return true;            
         }
 
